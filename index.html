@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mリーグドラフト</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>🏆 Mリーグドラフト</h1>
+
+        <!-- ========================================
+             ゲーム名
+        ======================================== -->
+
+        <section class="card game-info-card">
+
+            <label
+                for="gameNameInput"
+                class="game-name-label"
+            >
+                ゲーム名・大会名
+            </label>
+
+            <div class="game-name-row">
+
+                <input
+                    type="text"
+                    id="gameNameInput"
+                    placeholder="例：2026-27 Mリーグドラフト大会"
+                    maxlength="100"
+                >
+
+                <button id="saveGameNameButton">
+                    保存
+                </button>
+
+            </div>
+
+            <p
+                id="gameNameDisplay"
+                class="game-name-display"
+            >
+                Mリーグドラフト
+            </p>
+
+        </section>
+
+
+        <p class="description">
+            4人の選手をドラフトして、シーズン終了時のポイントを競おう！
+        </p>
+
+
+        <!-- ========================================
+             参加者
+        ======================================== -->
+
+        <section class="card">
+
+            <h2>参加者</h2>
+
+            <div class="participant-add-row">
+
+                <input
+                    type="text"
+                    id="participantName"
+                    placeholder="参加者名を入力"
+                >
+
+                <button id="addParticipantButton">
+                    参加者を追加
+                </button>
+
+            </div>
+
+            <div id="participantList"></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ========================================
+         バックアップ復元用
+    ======================================== -->
+
+    <input
+        type="file"
+        id="restoreFileInput"
+        accept=".json,application/json"
+        hidden
+    >
+
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
