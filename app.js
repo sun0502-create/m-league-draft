@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js'
+import { initialPlayers } from './data.js'
 
-let players = [...window.initialPlayers]
+let players = [...initialPlayers]
 // ========================================
 // Mリーグドラフト
 // ========================================
