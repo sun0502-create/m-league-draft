@@ -918,7 +918,7 @@ function getFemaleCount(
             return (
                 player &&
                 player.gender ===
-                    "female"
+                    "女性"
             );
 
         }
