@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js'
 
+let players = [...window.initialPlayers]
 // ========================================
 // Mリーグドラフト
 // ========================================
@@ -3435,23 +3436,99 @@ function displayParticipants() {
 
 async function testSupabaseConnection() {
     const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession()
+        await supabase.auth.getSession();
 
-    console.log('Supabase session:', sessionData.session)
-    console.log('Session error:', sessionError)
+    console.log(
+        "Supabase session:",
+        sessionData.session
+    );
 
-    const { data: players, error: playersError } =
+    console.log(
+        "Session error:",
+        sessionError
+    );
+
+    const { data: supabasePlayers, error: playersError } =
         await supabase
-            .from('players')
-            .select('id, name, team, gender')
+            .from("players")
+            .select("id, name, team, gender")
+            .order("id");
 
-    console.log('Supabase players:', players)
+    console.log(
+        "Supabase players:",
+        supabasePlayers
+    );
 
     if (playersError) {
-        console.error('Players error:', playersError)
-    }
-}
+        console.error(
+            "Players error:",
+            playersError
+        );
 
+        return;
+    }
+
+    // Supabaseの選手データを画面で使うplayers配列に反映
+    players = supabasePlayers;
+
+    console.log(
+        "画面で使用するplayers:",
+        players
+    );
+
+    // Supabaseから保存済みのドラフト指名を取得
+    const { data: draftPicks, error: draftPicksError } =
+        await supabase
+            .from("draft_picks")
+            .select(
+                "participant_id, player_id, slot, confirmed"
+            )
+            .eq(
+                "game_id",
+                "3937728e-32cb-4805-9e8f-88e0edc3cda6"
+            )
+            .order("slot");
+
+    if (draftPicksError) {
+        console.error(
+            "Draft picks load error:",
+            draftPicksError
+        );
+
+        return;
+    }
+
+    console.log(
+        "Supabase draft picks:",
+        draftPicks
+    );
+
+    // 取得したドラフト内容を参加者データに反映
+    draftPicks.forEach((pick) => {
+        const participant = participants.find(
+            (participant) =>
+                participant.id === pick.participant_id
+        );
+
+        if (!participant) {
+            return;
+        }
+
+        if (!participant.players) {
+            participant.players = [];
+        }
+
+        participant.players[pick.slot - 1] =
+            pick.player_id;
+    });
+
+    console.log(
+        "ドラフト反映後のparticipants:",
+        participants
+    );
+
+    displayParticipants();
+}
 testSupabaseConnection()
 
 const loginButton = document.getElementById('loginButton')
