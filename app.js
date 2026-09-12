@@ -1,3 +1,5 @@
+import { supabase } from './supabase.js'
+
 // ========================================
 // Mリーグドラフト
 // ========================================
@@ -387,7 +389,7 @@ function updateGameNameDisplay() {
 // ゲーム名保存
 // ========================================
 
-function saveGameName() {
+async function saveGameName() {
 
     const newGameName =
         gameNameInput.value.trim();
@@ -406,11 +408,39 @@ function saveGameName() {
     }
 
 
+    // 現在はテスト用ゲームIDを使用
+    const gameId =
+        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+
+
+    const { error } =
+        await supabase
+            .from("games")
+            .update({
+                name: newGameName
+            })
+            .eq("id", gameId);
+
+
+    if (error) {
+
+        console.error(
+            "Game name update error:",
+            error
+        );
+
+        alert(
+            `ゲーム名の保存に失敗しました。\n${error.message}`
+        );
+
+        return;
+
+    }
+
+
     gameName =
         newGameName;
 
-
-    saveData();
 
     updateGameNameDisplay();
 
@@ -426,15 +456,12 @@ function saveGameName() {
 // 参加者を追加
 // ========================================
 
-function addParticipant() {
+async function addParticipant() {
 
     const name =
         nameInput.value.trim();
 
-
-    if (
-        name === ""
-    ) {
+    if (name === "") {
 
         alert(
             "参加者名を入力してください"
@@ -444,10 +471,47 @@ function addParticipant() {
 
     }
 
+    // 現在はテスト用ゲームIDを使用
+    const gameId =
+        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+
+    const { data, error } =
+        await supabase
+            .from("participants")
+            .insert({
+                game_id: gameId,
+                name: name
+            })
+            .select()
+            .single();
+
+    if (error) {
+
+        console.error(
+            "Participant insert error:",
+            error
+        );
+
+        alert(
+            `参加者の追加に失敗しました。\n${error.message}`
+        );
+
+        return;
+
+    }
+
+    console.log(
+        "Participant added:",
+        data
+    );
 
     participants.push({
 
-        name: name,
+        id: data.id,
+
+        gameId: data.game_id,
+
+        name: data.name,
 
         players: [],
 
@@ -457,12 +521,7 @@ function addParticipant() {
 
     });
 
-
-    nameInput.value =
-        "";
-
-
-    saveData();
+    nameInput.value = "";
 
     displayParticipants();
 
@@ -473,7 +532,7 @@ function addParticipant() {
 // 参加者を削除
 // ========================================
 
-function deleteParticipant(
+async function deleteParticipant(
     participant
 ) {
 
@@ -494,6 +553,35 @@ function deleteParticipant(
     }
 
 
+    const { error } =
+        await supabase
+            .from("participants")
+            .delete()
+            .eq("id", participant.id);
+
+
+    if (error) {
+
+        console.error(
+            "Participant delete error:",
+            error
+        );
+
+        alert(
+            `参加者の削除に失敗しました。\n${error.message}`
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        "Participant deleted:",
+        participant
+    );
+
+
     const index =
         participants.indexOf(
             participant
@@ -512,8 +600,6 @@ function deleteParticipant(
     }
 
 
-    saveData();
-
     displayParticipants();
 
 }
@@ -523,7 +609,7 @@ function deleteParticipant(
 // 参加者名を変更
 // ========================================
 
-function renameParticipant(
+async function renameParticipant(
     participant
 ) {
 
@@ -560,11 +646,34 @@ function renameParticipant(
     }
 
 
+    const { error } =
+        await supabase
+            .from("participants")
+            .update({
+                name: trimmedName
+            })
+            .eq("id", participant.id);
+
+
+    if (error) {
+
+        console.error(
+            "Participant update error:",
+            error
+        );
+
+        alert(
+            `参加者名の変更に失敗しました。\n${error.message}`
+        );
+
+        return;
+
+    }
+
+
     participant.name =
         trimmedName;
 
-
-    saveData();
 
     displayParticipants();
 
@@ -2841,7 +2950,7 @@ function displayParticipants() {
 
                 select.addEventListener(
                     "change",
-                    function () {
+                    async function () {
 
                         if (
                             participant.confirmed
@@ -2854,6 +2963,11 @@ function displayParticipants() {
 
                         const newPlayerId =
                             select.value;
+
+                        console.log(
+                            "選択されたplayerId:",
+                            newPlayerId
+                        );
 
 
                         const alreadySelected =
@@ -2911,11 +3025,53 @@ function displayParticipants() {
                         }
 
 
+                        const gameId =
+                            "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+
+                        const slot =
+                            i + 1;
+
+                        const { data, error } =
+                            await supabase
+                                .from("draft_picks")
+                                .upsert(
+                                    {
+                                        game_id: gameId,
+                                        participant_id: participant.id,
+                                        player_id: newPlayerId,
+                                        slot: slot,
+                                        confirmed: false
+                                    },
+                                    {
+                                        onConflict:
+                                            "game_id,participant_id,slot"
+                                    }
+                                )
+                                .select()
+                                .single();
+
+                        if (error) {
+                            console.error(
+                                "Draft pick save error:",
+                                error
+                            );
+
+                            alert(
+                                `ドラフト選択の保存に失敗しました。\n${error.message}`
+                            );
+
+                            displayParticipants();
+
+                            return;
+                        }
+
+                        console.log(
+                            "Draft pick saved:",
+                            data
+                        );
+
                         participant.players[i] =
                             newPlayerId;
-
-
-                        saveData();
 
                         displayParticipants();
 
@@ -3276,3 +3432,149 @@ function displayParticipants() {
     }
 
 }
+
+async function testSupabaseConnection() {
+    const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession()
+
+    console.log('Supabase session:', sessionData.session)
+    console.log('Session error:', sessionError)
+
+    const { data: players, error: playersError } =
+        await supabase
+            .from('players')
+            .select('id, name, team, gender')
+
+    console.log('Supabase players:', players)
+
+    if (playersError) {
+        console.error('Players error:', playersError)
+    }
+}
+
+testSupabaseConnection()
+
+const loginButton = document.getElementById('loginButton')
+
+loginButton.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value
+    const password = document.getElementById('loginPassword').value
+    const loginMessage = document.getElementById('loginMessage')
+
+    loginMessage.textContent = 'ログイン中...'
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    })
+
+    if (error) {
+        console.error('Login error:', error)
+        loginMessage.textContent = `ログインに失敗しました：${error.message}`
+        return
+    }
+
+    console.log('Login success:', data)
+    loginMessage.textContent = 'ログインしました！'
+})
+
+async function loadParticipantsFromSupabase() {
+
+    const { data, error } =
+        await supabase
+            .from('participants')
+            .select(
+                'id, game_id, name, created_at, updated_at'
+            )
+            .order(
+                'created_at',
+                { ascending: true }
+            )
+
+
+    if (error) {
+
+        console.error(
+            'Participants error:',
+            error
+        )
+
+        return
+
+    }
+
+
+    participants =
+        data.map((participant) => ({
+
+            id:
+                participant.id,
+
+            gameId:
+                participant.game_id,
+
+            name:
+                participant.name,
+
+            players: [],
+
+            totalScore: 0,
+
+            confirmed: false
+
+        }))
+
+
+    console.log(
+        'Participants loaded:',
+        participants
+    )
+
+
+    displayParticipants()
+
+}
+
+loadParticipantsFromSupabase()
+
+async function loadGameFromSupabase() {
+
+    const gameId =
+        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+
+
+    const { data, error } =
+        await supabase
+            .from("games")
+            .select("id, name, status")
+            .eq("id", gameId)
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "Game error:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    gameName =
+        data.name;
+
+
+    updateGameNameDisplay();
+
+
+    console.log(
+        "Game loaded:",
+        data
+    );
+
+}
+
+loadGameFromSupabase();
