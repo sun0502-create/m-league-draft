@@ -976,7 +976,7 @@ function canConfirm(
 // ドラフト確定
 // ========================================
 
-function confirmDraft(
+async function confirmDraft(
     participant
 ) {
 
