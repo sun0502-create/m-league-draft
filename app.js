@@ -1017,9 +1017,34 @@ function confirmDraft(
     }
 
 
-    participant.confirmed =
-        true;
+    participant.confirmed = true;
 
+    const { error } = await supabase
+        .from("draft_picks")
+        .update({
+            confirmed: true
+        })
+        .eq(
+            "game_id",
+            "3937728e-32cb-4805-9e8f-88e0edc3cda6"
+        )
+        .eq(
+            "participant_id",
+            participant.id
+        );
+
+    if (error) {
+        console.error(
+            "Draft confirmation save error:",
+            error
+        );
+
+        alert(
+            `ドラフト確定状態の保存に失敗しました。\n${error.message}`
+        );
+
+        return;
+    }
 
     saveData();
 
