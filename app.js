@@ -3577,6 +3577,10 @@ console.log(
 
         participant.players[pick.slot - 1] =
             pick.player_id;
+
+        if (pick.confirmed) {
+            participant.confirmed = true;
+        }
     });
 
     console.log(
