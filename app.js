@@ -2911,8 +2911,7 @@ function displayParticipants() {
 
 
                         option.textContent =
-                            `${player.name}（${player.team}）`;
-
+                             `${player.name}（${player.team}） ${Number(player.score) || 0}pt`;
 
                         if (
                             selectedPlayerIds.includes(
@@ -3454,27 +3453,59 @@ async function testSupabaseConnection() {
             .select("id, name, team, gender")
             .order("id");
 
-    console.log(
-        "Supabase players:",
-        supabasePlayers
+console.log(
+    "Supabase players:",
+    supabasePlayers
+);
+
+if (playersError) {
+    console.error(
+        "Players error:",
+        playersError
     );
 
-    if (playersError) {
-        console.error(
-            "Players error:",
-            playersError
+    return;
+}
+
+const { data: playerScores, error: playerScoresError } =
+    await supabase
+        .from("player_scores")
+        .select("player_id, score")
+        .eq("season_id", "season_001");
+
+if (playerScoresError) {
+    console.error(
+        "Player scores error:",
+        playerScoresError
+    );
+
+    return;
+}
+
+console.log(
+    "Supabase player scores:",
+    playerScores
+);
+
+players = supabasePlayers.map((player) => {
+    const scoreData =
+        playerScores.find(
+            (score) =>
+                score.player_id === player.id
         );
 
-        return;
-    }
+    return {
+        ...player,
+        score: scoreData
+            ? Number(scoreData.score)
+            : 0
+    };
+});
 
-    // Supabaseの選手データを画面で使うplayers配列に反映
-    players = supabasePlayers;
-
-    console.log(
-        "画面で使用するplayers:",
-        players
-    );
+console.log(
+    "ポイント反映後のplayers:",
+    players
+);
 
     // Supabaseから保存済みのドラフト指名を取得
     const { data: draftPicks, error: draftPicksError } =
