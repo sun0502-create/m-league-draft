@@ -1448,6 +1448,8 @@ function createScoreInputs(
         totalScoreElement
     );
 
+        }
+    );
 }
 
 
