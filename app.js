@@ -1241,68 +1241,169 @@ function resetScoresOnly() {
 // ゲームを最初からやり直す
 // ========================================
 
-function resetGameCompletely() {
+async function resetGameCompletely() {
 
     const result =
         confirm(
-
             "ゲームを最初からやり直しますか？\n\n" +
-
             "以下のデータがすべて削除されます。\n\n" +
-
             "・ゲーム名\n" +
             "・参加者\n" +
-            "・ドラフト結果\n" +
-            "・選手ポイント\n\n" +
-
+            "・ドラフト結果\n\n" +
             "この操作は元に戻せません。"
-
         );
 
 
     if (!result) {
 
         return;
-
     }
 
 
     const secondConfirm =
         confirm(
-
             "本当に最初からやり直しますか？\n\n" +
-
             "必要であれば、先に「ゲームデータをバックアップ」してください。"
-
         );
 
 
     if (!secondConfirm) {
 
         return;
-
     }
 
 
+    if (!currentGameId) {
+
+        alert(
+            "ゲームが読み込まれていません。"
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ドラフト結果を削除
+    // ========================================
+
+    const {
+        error: draftDeleteError
+    } =
+        await supabase
+            .from("draft_picks")
+            .delete()
+            .eq(
+                "game_id",
+                currentGameId
+            );
+
+
+    if (draftDeleteError) {
+
+        console.error(
+            "Draft delete error:",
+            draftDeleteError
+        );
+
+        alert(
+            `ドラフト結果の削除に失敗しました。\n${draftDeleteError.message}`
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // 参加者を削除
+    // ========================================
+
+    const {
+        error: participantDeleteError
+    } =
+        await supabase
+            .from("participants")
+            .delete()
+            .eq(
+                "game_id",
+                currentGameId
+            );
+
+
+    if (participantDeleteError) {
+
+        console.error(
+            "Participant delete error:",
+            participantDeleteError
+        );
+
+        alert(
+            `参加者の削除に失敗しました。\n${participantDeleteError.message}`
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ゲームを初期状態へ戻す
+    // ========================================
+
+    const {
+        error: gameUpdateError
+    } =
+        await supabase
+            .from("games")
+            .update({
+                name:
+                    DEFAULT_GAME_NAME,
+
+                status:
+                    "setup"
+            })
+            .eq(
+                "id",
+                currentGameId
+            );
+
+
+    if (gameUpdateError) {
+
+        console.error(
+            "Game reset error:",
+            gameUpdateError
+        );
+
+        alert(
+            `ゲームの初期化に失敗しました。\n${gameUpdateError.message}`
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // 画面上のデータも初期化
+    // ========================================
+
     participants =
         [];
-
 
     gameName =
         DEFAULT_GAME_NAME;
 
 
-    players.forEach(
-        (player) => {
+    // ========================================
+    // このゲームのlocalStorageも削除
+    // ========================================
 
-            player.score =
-                0;
+    const storageKey =
+        `${STORAGE_KEY_PREFIX}-${currentGameId}`;
 
-        }
+    localStorage.removeItem(
+        storageKey
     );
 
-
-    saveData();
 
     updateGameNameDisplay();
 
@@ -1312,7 +1413,6 @@ function resetGameCompletely() {
     alert(
         "ゲームを最初からやり直しました。"
     );
-
 }
 
 
