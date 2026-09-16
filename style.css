@@ -191,8 +191,9 @@ button:disabled {
     gap: 15px;
 
     margin-bottom: 18px;
-}
 
+    flex-wrap: nowrap;
+}
 
 /* ========================================
    名前
@@ -1014,4 +1015,13 @@ button:disabled {
     font-weight: 700;
     text-align: right;
     white-space: nowrap;
+}
+
+.participant-header > * {
+    min-width: 0;
+}
+
+.participant-header .rank-display {
+    white-space: nowrap;
+    flex-shrink: 0;
 }
