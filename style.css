@@ -1017,11 +1017,6 @@ button:disabled {
     white-space: nowrap;
 }
 
-.participant-header > * {
-    min-width: 0;
-}
-
-.participant-header .rank-display {
+.participant-header {
     white-space: nowrap;
-    flex-shrink: 0;
 }
