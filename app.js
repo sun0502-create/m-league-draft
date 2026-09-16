@@ -720,52 +720,6 @@ function editDraft(
 }
 
 
-// ========================================
-// ポイントだけリセット
-// ========================================
-
-function resetScoresOnly() {
-
-    const result =
-        confirm(
-
-            "選手ポイントだけを0に戻しますか？\n\n" +
-
-            "ドラフト結果と参加者はそのまま残ります。"
-
-        );
-
-
-    if (!result) {
-
-        return;
-
-    }
-
-
-    players.forEach(
-        (player) => {
-
-            player.score =
-                0;
-
-        }
-    );
-
-
-    calculateAllTotalScores();
-
-    saveData();
-
-    displayParticipants();
-
-
-    alert(
-        "ポイントをリセットしました。"
-    );
-
-}
-
 
 // ========================================
 // ゲームを最初からやり直す
@@ -3252,30 +3206,6 @@ function displayParticipants() {
 
         controlArea.className =
             "control-area";
-
-
-        // ========================================
-        // ポイントだけリセット
-        // ========================================
-
-        const resetScoresButton =
-            document.createElement(
-                "button"
-            );
-
-
-        resetScoresButton.textContent =
-            "🔢 ポイントだけリセット";
-
-
-        resetScoresButton.className =
-            "reset-scores-button";
-
-
-        resetScoresButton.addEventListener(
-            "click",
-            resetScoresOnly
-        );
 
 
         // ========================================
