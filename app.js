@@ -1398,103 +1398,34 @@ function createScoreInputs(
                 `${index + 1}. ${player.name}（${player.team}）`;
 
 
-            // ========================================
-            // ポイント入力
-            // ========================================
+           // ========================================
+    // ポイント表示
+    // ========================================
 
-            const scoreInput =
-                document.createElement(
-                    "input"
-                );
+    const scoreDisplay =
+        document.createElement(
+            "span"
+        );
 
+    scoreDisplay.className =
+        "score-display";
 
-            scoreInput.type =
-                "number";
-
-            scoreInput.step =
-                "0.1";
-
-            scoreInput.placeholder =
-                "ポイント";
-
-            scoreInput.className =
-                "score-input";
+    scoreDisplay.textContent =
+        `${Number(player.score) || 0} pt`;
 
 
-            scoreInput.value =
-                player.score;
-
-
-            scoreInput.addEventListener(
-                "input",
-                function () {
-
-                    const value =
-                        scoreInput.value;
-
-
-                    if (
-                        value === "" ||
-                        value === "-"
-                    ) {
-
-                        player.score =
-                            0;
-
-                        updateScoreDisplays();
-
-                        saveData();
-
-                        return;
-
-                    }
-
-
-                    const score =
-                        parseFloat(
-                            value
-                        );
-
-
-                    if (
-                        isNaN(score)
-                    ) {
-
-                        player.score =
-                            0;
-
-                    } else {
-
-                        player.score =
-                            score;
-
-                    }
-
-
-                    updateScoreDisplays();
-
-                    saveData();
-
-                }
-            );
-
-
-            scoreRow.appendChild(
-                playerName
-            );
-
-            scoreRow.appendChild(
-                scoreInput
-            );
-
-
-            container.appendChild(
-                scoreRow
-            );
-
-        }
+    scoreRow.appendChild(
+        playerName
     );
 
+    scoreRow.appendChild(
+        scoreDisplay
+    );
+
+
+    container.appendChild(
+        scoreRow
+    );
 
     // ========================================
     // 合計
