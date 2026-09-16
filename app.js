@@ -1109,37 +1109,71 @@ async function renameParticipant(
 // ドラフト編集開始
 // ========================================
 
-function editDraft(
+async function editDraft(
     participant
 ) {
 
     const result =
         confirm(
-
             `${participant.name}さんのドラフトを編集しますか？\n\n` +
-
             "現在の選手選択を変更できるようになります。\n" +
-
             "編集後はもう一度「ドラフトを確定」してください。"
-
         );
 
 
     if (!result) {
 
         return;
+    }
 
+
+    if (!currentGameId) {
+
+        alert(
+            "ゲームが読み込まれていません。"
+        );
+
+        return;
+    }
+
+
+    const { error } =
+        await supabase
+            .from("draft_picks")
+            .update({
+                confirmed: false
+            })
+            .eq(
+                "game_id",
+                currentGameId
+            )
+            .eq(
+                "participant_id",
+                participant.id
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Draft edit save error:",
+            error
+        );
+
+        alert(
+            `ドラフト編集状態の保存に失敗しました。\n${error.message}`
+        );
+
+        return;
     }
 
 
     participant.confirmed =
         false;
 
-
     saveData();
 
     displayParticipants();
-
 }
 
 
