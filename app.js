@@ -720,7 +720,51 @@ function editDraft(
 }
 
 
+// ========================================
+// ポイントだけリセット
+// ========================================
 
+function resetScoresOnly() {
+
+    const result =
+        confirm(
+
+            "選手ポイントだけを0に戻しますか？\n\n" +
+
+            "ドラフト結果と参加者はそのまま残ります。"
+
+        );
+
+
+    if (!result) {
+
+        return;
+
+    }
+
+
+    players.forEach(
+        (player) => {
+
+            player.score =
+                0;
+
+        }
+    );
+
+
+    calculateAllTotalScores();
+
+    saveData();
+
+    displayParticipants();
+
+
+    alert(
+        "ポイントをリセットしました。"
+    );
+
+}
 
 
 // ========================================
@@ -3212,7 +3256,6 @@ function displayParticipants() {
             "control-area";
 
 
- 
 
 
         // ========================================
@@ -3290,10 +3333,6 @@ function displayParticipants() {
             }
         );
 
-
-        controlArea.appendChild(
-            resetScoresButton
-        );
 
         controlArea.appendChild(
             backupButton
