@@ -3497,33 +3497,10 @@ console.log(
         participants
     );
 
-    displayParticipants();
 }
 testSupabaseConnection()
 
-const loginButton = document.getElementById('loginButton')
 
-loginButton.addEventListener('click', async () => {
-    const email = document.getElementById('loginEmail').value
-    const password = document.getElementById('loginPassword').value
-    const loginMessage = document.getElementById('loginMessage')
-
-    loginMessage.textContent = 'ログイン中...'
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    })
-
-    if (error) {
-        console.error('Login error:', error)
-        loginMessage.textContent = `ログインに失敗しました：${error.message}`
-        return
-    }
-
-    console.log('Login success:', data)
-    loginMessage.textContent = 'ログインしました！'
-})
 
 async function loadParticipantsFromSupabase() {
 
@@ -3582,7 +3559,6 @@ async function loadParticipantsFromSupabase() {
 
 }
 
-loadParticipantsFromSupabase()
 
 async function loadGameFromSupabase() {
 
@@ -3624,4 +3600,44 @@ async function loadGameFromSupabase() {
 
 }
 
-loadGameFromSupabase();
+// ========================================
+// アプリ起動
+// ========================================
+
+async function initializeApp() {
+
+    const {
+        data: { session },
+        error
+    } =
+        await supabase.auth.getSession();
+
+    if (
+        error ||
+        !session
+    ) {
+
+        console.log(
+            "未ログインのためログイン画面へ移動します"
+        );
+
+        window.location.href =
+            "/login.html";
+
+        return;
+    }
+
+    console.log(
+        "ログインユーザー:",
+        session.user.email
+    );
+
+    await loadGameFromSupabase();
+
+    await loadParticipantsFromSupabase();
+
+    await testSupabaseConnection();
+
+}
+
+initializeApp();
