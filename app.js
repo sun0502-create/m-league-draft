@@ -217,17 +217,38 @@ async function createTournament() {
     );
 
 
+    // ========================================
+    // 作成した大会をプルダウンへ追加
+    // ========================================
+
+    const option =
+        document.createElement(
+            "option"
+        );
+
+    option.value =
+        tournament.id;
+
+    option.textContent =
+        tournament.name;
+
+    tournamentSelect.appendChild(
+        option
+    );
+
+    tournamentSelect.value =
+        tournament.id;
+
+
+    // ========================================
+    // 完了表示
+    // ========================================
+
     tournamentMessage.textContent =
         `「${tournament.name}」を作成しました。`;
 
     newTournamentName.value =
         "";
-
-
-    await loadUserTournaments(
-        tournament.id
-    );
-
 
     createTournamentButton.disabled =
         false;
