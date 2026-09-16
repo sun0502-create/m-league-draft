@@ -104,6 +104,26 @@ const tournamentMessage =
         "tournamentMessage"
     );
 
+const currentInviteCode =
+    document.getElementById(
+        "currentInviteCode"
+    );
+
+const joinTournamentCode =
+    document.getElementById(
+        "joinTournamentCode"
+    );
+
+const joinTournamentButton =
+    document.getElementById(
+        "joinTournamentButton"
+    );
+
+const joinTournamentMessage =
+    document.getElementById(
+        "joinTournamentMessage"
+    );
+
 // ========================================
 // 新しい大会を作成
 // ========================================
@@ -285,6 +305,8 @@ await loadParticipantsFromSupabase();
 
 await testSupabaseConnection();
 
+await loadCurrentInviteCode();
+
     // ========================================
     // 完了表示
     // ========================================
@@ -444,9 +466,166 @@ async function loadUserTournaments(
     );
 }
 
+// ========================================
+// 現在の大会の招待コードを表示
+// ========================================
+
+async function loadCurrentInviteCode() {
+
+    if (!currentTournamentId) {
+
+        currentInviteCode.textContent =
+            "-";
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabase
+            .from(
+                "tournaments"
+            )
+            .select(
+                "invite_code"
+            )
+            .eq(
+                "id",
+                currentTournamentId
+            )
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "Invite code load error:",
+            error
+        );
+
+        currentInviteCode.textContent =
+            "取得失敗";
+
+        return;
+    }
+
+
+    currentInviteCode.textContent =
+        data.invite_code;
+}
+
+// ========================================
+// 招待コードで大会に参加
+// ========================================
+
+async function joinTournamentByCode() {
+
+    const code =
+        joinTournamentCode.value
+            .trim();
+
+    if (!code) {
+
+        joinTournamentMessage.textContent =
+            "招待コードを入力してください。";
+
+        return;
+    }
+
+
+    joinTournamentButton.disabled =
+        true;
+
+    joinTournamentMessage.textContent =
+        "大会に参加しています...";
+
+
+    const {
+        data: tournamentId,
+        error
+    } =
+        await supabase
+            .rpc(
+                "join_tournament_by_code",
+                {
+                    p_invite_code:
+                        code
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Join tournament error:",
+            error
+        );
+
+        joinTournamentMessage.textContent =
+            "招待コードが正しくないか、大会に参加できませんでした。";
+
+        joinTournamentButton.disabled =
+            false;
+
+        return;
+    }
+
+
+    // ========================================
+    // 参加した大会を選択
+    // ========================================
+
+    await loadUserTournaments(
+        tournamentId
+    );
+
+
+    currentTournamentId =
+        tournamentId;
+
+    currentGameId =
+        null;
+
+    participants =
+        [];
+
+    displayParticipants();
+
+
+    // ========================================
+    // 参加した大会のデータを読み込む
+    // ========================================
+
+    await loadGameFromSupabase();
+
+    await loadParticipantsFromSupabase();
+
+    await testSupabaseConnection();
+
+    await loadCurrentInviteCode();
+
+
+    joinTournamentCode.value =
+        "";
+
+    joinTournamentMessage.textContent =
+        "大会に参加しました。";
+
+    joinTournamentButton.disabled =
+        false;
+}
+
 createTournamentButton.addEventListener(
     "click",
     createTournament
+);
+
+joinTournamentButton.addEventListener(
+    "click",
+    joinTournamentByCode
 );
 
 tournamentSelect.addEventListener(
@@ -474,6 +653,7 @@ tournamentSelect.addEventListener(
 
         if (!currentTournamentId) {
 
+            currentInviteCode.textContent = "-";
             return;
         }
 
@@ -483,6 +663,8 @@ tournamentSelect.addEventListener(
         await loadParticipantsFromSupabase();
 
         await testSupabaseConnection();
+
+        await loadCurrentInviteCode();
     }
 );
 
@@ -4351,6 +4533,8 @@ async function initializeApp() {
     await loadParticipantsFromSupabase();
 
     await testSupabaseConnection();
+
+    await loadCurrentInviteCode();
 
 }
 
