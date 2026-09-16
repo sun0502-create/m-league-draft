@@ -1427,6 +1427,9 @@ function createScoreInputs(
         scoreRow
     );
 
+            }
+    );
+
     // ========================================
     // 合計
     // ========================================
@@ -1448,8 +1451,6 @@ function createScoreInputs(
         totalScoreElement
     );
 
-        }
-    );
 }
 
 
