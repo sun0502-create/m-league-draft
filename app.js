@@ -11,8 +11,8 @@ let players = [...initialPlayers]
 // データ保存用キー
 // ========================================
 
-const STORAGE_KEY = "m-league-draft-data";
-
+const STORAGE_KEY_PREFIX =
+    "m-league-draft-data";
 
 // ========================================
 // 初期ゲーム名
@@ -490,8 +490,6 @@ tournamentSelect.addEventListener(
 // 起動時
 // ========================================
 
-loadData();
-
 updateGameNameDisplay();
 
 displayParticipants();
@@ -603,11 +601,18 @@ function saveData() {
     };
 
 
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(data)
-    );
+if (!currentGameId) {
 
+    return;
+}
+
+const storageKey =
+    `${STORAGE_KEY_PREFIX}-${currentGameId}`;
+
+localStorage.setItem(
+    storageKey,
+    JSON.stringify(data)
+);
 }
 
 
@@ -617,9 +622,17 @@ function saveData() {
 
 function loadData() {
 
+    if (!currentGameId) {
+
+        return;
+    }
+
+    const storageKey =
+        `${STORAGE_KEY_PREFIX}-${currentGameId}`;
+
     const savedData =
         localStorage.getItem(
-            STORAGE_KEY
+            storageKey
         );
 
 
