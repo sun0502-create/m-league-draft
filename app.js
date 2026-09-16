@@ -76,6 +76,328 @@ const restoreFileInput =
         "restoreFileInput"
     );
 
+// ========================================
+// 新しい大会を作成
+// ========================================
+
+async function createTournament() {
+
+    const tournamentName =
+        newTournamentName.value.trim();
+
+    if (!tournamentName) {
+
+        tournamentMessage.textContent =
+            "大会名を入力してください。";
+
+        return;
+    }
+
+
+    const {
+        data: { user },
+        error: userError
+    } =
+        await supabase.auth.getUser();
+
+
+    if (
+        userError ||
+        !user
+    ) {
+
+        console.error(
+            "User error:",
+            userError
+        );
+
+        tournamentMessage.textContent =
+            "ログイン情報を取得できませんでした。";
+
+        return;
+    }
+
+
+    createTournamentButton.disabled =
+        true;
+
+    tournamentMessage.textContent =
+        "大会を作成しています...";
+
+
+    // ========================================
+    // tournaments に大会を作成
+    // ========================================
+
+    const {
+        data: tournament,
+        error: tournamentError
+    } =
+        await supabase
+            .from(
+                "tournaments"
+            )
+            .insert({
+                name:
+                    tournamentName,
+
+                created_by:
+                    user.id
+            })
+            .select(
+                "id, name"
+            )
+            .single();
+
+
+    if (tournamentError) {
+
+        console.error(
+            "Tournament create error:",
+            tournamentError
+        );
+
+        tournamentMessage.textContent =
+            "大会の作成に失敗しました。";
+
+        createTournamentButton.disabled =
+            false;
+
+        return;
+    }
+
+
+    // ========================================
+    // 作成者を owner として登録
+    // ========================================
+
+    const {
+        error: memberError
+    } =
+        await supabase
+            .from(
+                "tournament_members"
+            )
+            .insert({
+                tournament_id:
+                    tournament.id,
+
+                user_id:
+                    user.id,
+
+                role:
+                    "owner"
+            });
+
+
+    if (memberError) {
+
+        console.error(
+            "Tournament member error:",
+            memberError
+        );
+
+        tournamentMessage.textContent =
+            "大会メンバーの登録に失敗しました。";
+
+        createTournamentButton.disabled =
+            false;
+
+        return;
+    }
+
+
+    currentTournamentId =
+        tournament.id;
+
+
+    console.log(
+        "Tournament created:",
+        tournament
+    );
+
+
+    tournamentMessage.textContent =
+        `「${tournament.name}」を作成しました。`;
+
+    newTournamentName.value =
+        "";
+
+
+    await loadUserTournaments(
+        tournament.id
+    );
+
+
+    createTournamentButton.disabled =
+        false;
+}
+
+// ========================================
+// 自分が参加している大会一覧
+// ========================================
+
+async function loadUserTournaments(
+    selectedTournamentId = null
+) {
+
+    const {
+        data: { user },
+        error: userError
+    } =
+        await supabase.auth.getUser();
+
+
+    if (
+        userError ||
+        !user
+    ) {
+
+        console.error(
+            "User error:",
+            userError
+        );
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabase
+            .from(
+                "tournament_members"
+            )
+            .select(`
+                tournament_id,
+                role,
+                tournaments (
+                    id,
+                    name
+                )
+            `)
+            .eq(
+                "user_id",
+                user.id
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Tournament load error:",
+            error
+        );
+
+        return;
+    }
+
+
+    tournamentSelect.innerHTML =
+        "";
+
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            "";
+
+        option.textContent =
+            "参加している大会がありません";
+
+        tournamentSelect.appendChild(
+            option
+        );
+
+        currentTournamentId =
+            null;
+
+        return;
+    }
+
+
+    data.forEach(
+        (membership) => {
+
+            const tournament =
+                membership.tournaments;
+
+            if (!tournament) {
+                return;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                tournament.id;
+
+            option.textContent =
+                tournament.name;
+
+            tournamentSelect.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (selectedTournamentId) {
+
+        tournamentSelect.value =
+            selectedTournamentId;
+
+        currentTournamentId =
+            selectedTournamentId;
+
+    } else {
+
+        currentTournamentId =
+            tournamentSelect.value;
+
+    }
+
+
+    console.log(
+        "Current tournament:",
+        currentTournamentId
+    );
+}
+
+createTournamentButton.addEventListener(
+    "click",
+    createTournament
+);
+
+
+tournamentSelect.addEventListener(
+    "change",
+    function () {
+
+        currentTournamentId =
+            tournamentSelect.value;
+
+        console.log(
+            "大会を切り替えました:",
+            currentTournamentId
+        );
+
+    }
+);
 
 // ========================================
 // 起動時
@@ -3631,6 +3953,8 @@ async function initializeApp() {
         "ログインユーザー:",
         session.user.email
     );
+
+    await loadUserTournaments();
 
     await loadGameFromSupabase();
 
