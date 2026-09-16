@@ -82,6 +82,7 @@ const restoreFileInput =
 // ========================================
 
 let currentTournamentId = null;
+let currentGameId = null;
 
 const tournamentSelect =
     document.getElementById(
@@ -266,6 +267,23 @@ async function createTournament() {
     tournamentSelect.value =
         tournament.id;
 
+// ========================================
+// 新しい大会のゲームへ切り替え
+// ========================================
+
+currentGameId =
+    null;
+
+participants =
+    [];
+
+displayParticipants();
+
+await loadGameFromSupabase();
+
+await loadParticipantsFromSupabase();
+
+await testSupabaseConnection();
 
     // ========================================
     // 完了表示
@@ -431,19 +449,40 @@ createTournamentButton.addEventListener(
     createTournament
 );
 
-
 tournamentSelect.addEventListener(
     "change",
-    function () {
+    async function () {
 
         currentTournamentId =
-            tournamentSelect.value;
+            tournamentSelect.value ||
+            null;
+
+        currentGameId =
+            null;
+
+        participants =
+            [];
+
+        displayParticipants();
+
 
         console.log(
             "大会を切り替えました:",
             currentTournamentId
         );
 
+
+        if (!currentTournamentId) {
+
+            return;
+        }
+
+
+        await loadGameFromSupabase();
+
+        await loadParticipantsFromSupabase();
+
+        await testSupabaseConnection();
     }
 );
 
@@ -780,10 +819,14 @@ async function saveGameName() {
     }
 
 
-    // 現在はテスト用ゲームIDを使用
-    const gameId =
-        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+    if (!currentGameId) {
 
+        alert(
+            "ゲームが読み込まれていません。"
+        );
+
+        return;
+    }
 
     const { error } =
         await supabase
@@ -791,7 +834,10 @@ async function saveGameName() {
             .update({
                 name: newGameName
             })
-            .eq("id", gameId);
+            .eq(
+                "id",
+                currentGameId
+            );
 
 
     if (error) {
@@ -844,14 +890,21 @@ async function addParticipant() {
     }
 
     // 現在はテスト用ゲームIDを使用
-    const gameId =
-        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+    if (!currentGameId) {
+
+        alert(
+            "大会のゲームが読み込まれていません。"
+        );
+
+        return;
+    }
 
     const { data, error } =
         await supabase
             .from("participants")
             .insert({
-                game_id: gameId,
+                game_id:
+                    currentGameId,
                 name: name
             })
             .select()
@@ -1369,6 +1422,14 @@ async function confirmDraft(
 
     }
 
+        if (!currentGameId) {
+
+        alert(
+            "ゲームが読み込まれていません。"
+        );
+
+        return;
+    }
 
     const result =
         confirm(
@@ -1396,7 +1457,7 @@ async function confirmDraft(
         })
         .eq(
             "game_id",
-            "3937728e-32cb-4805-9e8f-88e0edc3cda6"
+            currentGameId
         )
         .eq(
             "participant_id",
@@ -3356,8 +3417,19 @@ function displayParticipants() {
                         }
 
 
+                        if (!currentGameId) {
+
+                            alert(
+                                "ゲームが読み込まれていません。"
+                            );
+
+                            displayParticipants();
+
+                            return;
+                        }
+
                         const gameId =
-                            "3937728e-32cb-4805-9e8f-88e0edc3cda6";
+                            currentGameId;
 
                         const slot =
                             i + 1;
@@ -3812,6 +3884,17 @@ console.log(
     players
 );
 
+    if (!currentGameId) {
+
+        console.log(
+            "ゲーム未選択のためドラフト読み込みをスキップします"
+        );
+
+        displayParticipants();
+
+        return;
+    }
+
     // Supabaseから保存済みのドラフト指名を取得
     const { data: draftPicks, error: draftPicksError } =
         await supabase
@@ -3821,7 +3904,7 @@ console.log(
             )
             .eq(
                 "game_id",
-                "3937728e-32cb-4805-9e8f-88e0edc3cda6"
+                currentGameId
             )
             .order("slot");
 
@@ -3867,109 +3950,221 @@ console.log(
         participants
     );
 
+    displayParticipants();
 }
-testSupabaseConnection()
-
 
 
 async function loadParticipantsFromSupabase() {
 
-    const { data, error } =
-        await supabase
-            .from('participants')
-            .select(
-                'id, game_id, name, created_at, updated_at'
-            )
-            .order(
-                'created_at',
-                { ascending: true }
-            )
+    if (!currentGameId) {
 
+        participants = [];
 
-    if (error) {
+        displayParticipants();
 
-        console.error(
-            'Participants error:',
-            error
-        )
+        console.log(
+            "ゲームが選択されていません"
+        );
 
-        return
-
+        return;
     }
 
 
-    participants =
-        data.map((participant) => ({
-
-            id:
-                participant.id,
-
-            gameId:
-                participant.game_id,
-
-            name:
-                participant.name,
-
-            players: [],
-
-            totalScore: 0,
-
-            confirmed: false
-
-        }))
-
-
-    console.log(
-        'Participants loaded:',
-        participants
-    )
-
-
-    displayParticipants()
-
-}
-
-
-async function loadGameFromSupabase() {
-
-    const gameId =
-        "3937728e-32cb-4805-9e8f-88e0edc3cda6";
-
-
     const { data, error } =
         await supabase
-            .from("games")
-            .select("id, name, status")
-            .eq("id", gameId)
-            .single();
+            .from("participants")
+            .select(
+                "id, game_id, name, created_at, updated_at"
+            )
+            .eq(
+                "game_id",
+                currentGameId
+            )
+            .order(
+                "created_at",
+                { ascending: true }
+            );
 
 
     if (error) {
 
         console.error(
-            "Game error:",
+            "Participants error:",
             error
         );
 
         return;
-
     }
 
 
-    gameName =
-        data.name;
+    participants =
+        data.map(
+            (participant) => ({
 
+                id:
+                    participant.id,
+
+                gameId:
+                    participant.game_id,
+
+                name:
+                    participant.name,
+
+                players: [],
+
+                totalScore: 0,
+
+                confirmed: false
+
+            })
+        );
+
+
+    console.log(
+        "Participants loaded:",
+        participants
+    );
+
+
+    displayParticipants();
+}
+
+async function loadGameFromSupabase() {
+
+    if (!currentTournamentId) {
+
+        currentGameId =
+            null;
+
+        console.log(
+            "大会が選択されていません"
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // 選択中の大会のゲームを取得
+    // ========================================
+
+    const {
+        data: existingGame,
+        error: loadError
+    } =
+        await supabase
+            .from("games")
+            .select(
+                "id, name, status, tournament_id"
+            )
+            .eq(
+                "tournament_id",
+                currentTournamentId
+            )
+            .order(
+                "created_at",
+                { ascending: true }
+            )
+            .limit(1)
+            .maybeSingle();
+
+
+    if (loadError) {
+
+        console.error(
+            "Game load error:",
+            loadError
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // 既存ゲームがある場合
+    // ========================================
+
+    if (existingGame) {
+
+        currentGameId =
+            existingGame.id;
+
+        gameName =
+            existingGame.name;
+
+        updateGameNameDisplay();
+
+        console.log(
+            "Game loaded:",
+            existingGame
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ゲームが無ければ新規作成
+    // ========================================
+
+    const selectedOption =
+        tournamentSelect.options[
+            tournamentSelect.selectedIndex
+        ];
+
+    const tournamentName =
+        selectedOption
+            ? selectedOption.textContent
+            : DEFAULT_GAME_NAME;
+
+
+    const {
+        data: newGame,
+        error: createError
+    } =
+        await supabase
+            .from("games")
+            .insert({
+                name:
+                    tournamentName,
+
+                status:
+                    "setup",
+
+                tournament_id:
+                    currentTournamentId
+            })
+            .select(
+                "id, name, status, tournament_id"
+            )
+            .single();
+
+
+    if (createError) {
+
+        console.error(
+            "Game create error:",
+            createError
+        );
+
+        return;
+    }
+
+
+    currentGameId =
+        newGame.id;
+
+    gameName =
+        newGame.name;
 
     updateGameNameDisplay();
 
 
     console.log(
-        "Game loaded:",
-        data
+        "New game created:",
+        newGame
     );
-
 }
-
 // ========================================
 // アプリ起動
 // ========================================
