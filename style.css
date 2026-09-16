@@ -872,6 +872,19 @@ button:disabled {
 
 
 /* ========================================
+   ポイントリセット
+======================================== */
+
+.reset-scores-button {
+    background: #6b7280;
+}
+
+.reset-scores-button:hover:not(:disabled) {
+    background: #555b66;
+}
+
+
+/* ========================================
    ゲーム最初から
 ======================================== */
 
@@ -1004,6 +1017,11 @@ button:disabled {
     white-space: nowrap;
 }
 
-.participant-header {
+.participant-header > * {
+    min-width: 0;
+}
+
+.participant-header .rank-display {
     white-space: nowrap;
+    flex-shrink: 0;
 }
