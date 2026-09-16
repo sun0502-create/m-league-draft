@@ -1451,6 +1451,7 @@ function createScoreInputs(
         totalScoreElement
     );
 
+
 }
 
 
