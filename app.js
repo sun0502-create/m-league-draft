@@ -76,6 +76,33 @@ const restoreFileInput =
         "restoreFileInput"
     );
 
+
+// ========================================
+// 大会
+// ========================================
+
+let currentTournamentId = null;
+
+const tournamentSelect =
+    document.getElementById(
+        "tournamentSelect"
+    );
+
+const newTournamentName =
+    document.getElementById(
+        "newTournamentName"
+    );
+
+const createTournamentButton =
+    document.getElementById(
+        "createTournamentButton"
+    );
+
+const tournamentMessage =
+    document.getElementById(
+        "tournamentMessage"
+    );
+
 // ========================================
 // 新しい大会を作成
 // ========================================
