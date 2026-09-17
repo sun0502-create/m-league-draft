@@ -110,8 +110,58 @@ loginButton.addEventListener(
             data
         );
 
+        console.log(
+            "Login session:",
+            data.session
+        );
+
+
+        if (!data.session) {
+
+            loginMessage.textContent =
+                "ログインセッションを取得できませんでした。";
+
+            console.error(
+                "Session was not created after login."
+            );
+
+            return;
+        }
+
+
         loginMessage.textContent =
             "ログインしました。";
+
+
+        const {
+            data: sessionCheck,
+            error: sessionCheckError
+        } =
+            await supabase.auth.getSession();
+
+
+        console.log(
+            "Session immediately after login:",
+            sessionCheck.session
+        );
+
+        console.log(
+            "Session check error:",
+            sessionCheckError
+        );
+
+
+        if (
+            sessionCheckError ||
+            !sessionCheck.session
+        ) {
+
+            loginMessage.textContent =
+                "ログインセッションの保存に失敗しました。";
+
+            return;
+        }
+
 
         window.location.href =
             "/";
