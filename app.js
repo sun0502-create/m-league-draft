@@ -76,6 +76,10 @@ const restoreFileInput =
         "restoreFileInput"
     );
 
+const logoutButton =
+    document.getElementById(
+        "logoutButton"
+    );
 
 // ========================================
 // 大会
@@ -621,6 +625,32 @@ async function joinTournamentByCode() {
 createTournamentButton.addEventListener(
     "click",
     createTournament
+);
+
+logoutButton.addEventListener(
+    "click",
+    async function () {
+
+        const { error } =
+            await supabase.auth.signOut();
+
+        if (error) {
+
+            console.error(
+                "Logout error:",
+                error
+            );
+
+            alert(
+                "ログアウトに失敗しました。"
+            );
+
+            return;
+        }
+
+        window.location.href =
+            "/login.html";
+    }
 );
 
 joinTournamentButton.addEventListener(
