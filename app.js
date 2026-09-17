@@ -81,6 +81,11 @@ const logoutButton =
         "logoutButton"
     );
 
+const copyInviteCodeButton =
+    document.getElementById(
+        "copyInviteCodeButton"
+    );
+
 // ========================================
 // 大会
 // ========================================
@@ -650,6 +655,52 @@ logoutButton.addEventListener(
 
         window.location.href =
             "/login.html";
+    }
+);
+
+copyInviteCodeButton.addEventListener(
+    "click",
+    async function () {
+
+        const code =
+            currentInviteCode.textContent
+                .trim();
+
+        if (
+            !code ||
+            code === "-" ||
+            code === "取得失敗"
+        ) {
+
+            alert(
+                "コピーできる招待コードがありません。"
+            );
+
+            return;
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(
+                code
+            );
+
+            alert(
+                "招待コードをコピーしました！"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Copy error:",
+                error
+            );
+
+            alert(
+                "招待コードのコピーに失敗しました。"
+            );
+        }
     }
 );
 
