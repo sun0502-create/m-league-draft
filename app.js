@@ -133,6 +133,11 @@ const joinTournamentMessage =
         "joinTournamentMessage"
     );
 
+const deleteTournamentButton =
+    document.getElementById(
+        "deleteTournamentButton"
+    );
+
 // ========================================
 // 新しい大会を作成
 // ========================================
@@ -295,6 +300,150 @@ async function createTournament() {
 
     tournamentSelect.value =
         tournament.id;
+
+async function deleteCurrentTournament() {
+
+    if (!currentTournamentId) {
+
+        alert(
+            "削除する大会を選択してください。"
+        );
+
+        return;
+    }
+
+
+    const selectedOption =
+        tournamentSelect.options[
+            tournamentSelect.selectedIndex
+        ];
+
+    const tournamentName =
+        selectedOption
+            ? selectedOption.textContent
+            : "この大会";
+
+
+    const result =
+        confirm(
+            `「${tournamentName}」を削除しますか？\n\n` +
+            "参加者・ドラフト結果など、\n" +
+            "この大会のデータはすべて削除されます。\n\n" +
+            "この操作は元に戻せません。"
+        );
+
+
+    if (!result) {
+        return;
+    }
+
+
+    const secondConfirm =
+        confirm(
+            `本当に「${tournamentName}」を削除しますか？`
+        );
+
+
+    if (!secondConfirm) {
+        return;
+    }
+
+
+    deleteTournamentButton.disabled =
+        true;
+
+
+    const deletedGameId =
+        currentGameId;
+
+
+    const {
+        error
+    } =
+        await supabase
+            .rpc(
+                "delete_tournament",
+                {
+                    p_tournament_id:
+                        currentTournamentId
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Tournament delete error:",
+            error
+        );
+
+        alert(
+            "大会を削除できませんでした。\n" +
+            "大会を作成したオーナーだけが削除できます。"
+        );
+
+        deleteTournamentButton.disabled =
+            false;
+
+        return;
+    }
+
+
+    if (deletedGameId) {
+
+        const storageKey =
+            `${STORAGE_KEY_PREFIX}-${deletedGameId}`;
+
+        localStorage.removeItem(
+            storageKey
+        );
+    }
+
+
+    currentTournamentId =
+        null;
+
+    currentGameId =
+        null;
+
+    participants =
+        [];
+
+    gameName =
+        DEFAULT_GAME_NAME;
+
+
+    displayParticipants();
+
+    updateGameNameDisplay();
+
+    currentInviteCode.textContent =
+        "-";
+
+
+    await loadUserTournaments();
+
+
+    if (currentTournamentId) {
+
+        await loadGameFromSupabase();
+
+        await loadParticipantsFromSupabase();
+
+        await testSupabaseConnection();
+
+        await loadCurrentInviteCode();
+    }
+
+
+    deleteTournamentButton.disabled =
+        false;
+
+
+    alert(
+        `「${tournamentName}」を削除しました。`
+    );
+}
 
 // ========================================
 // 新しい大会のゲームへ切り替え
@@ -707,6 +856,11 @@ copyInviteCodeButton.addEventListener(
 joinTournamentButton.addEventListener(
     "click",
     joinTournamentByCode
+);
+
+deleteTournamentButton.addEventListener(
+    "click",
+    deleteCurrentTournament
 );
 
 tournamentSelect.addEventListener(
