@@ -46,6 +46,11 @@ const nameInput =
         "participantName"
     );
 
+const rankingArea =
+    document.getElementById(
+        "rankingArea"
+    );
+
 const addButton =
     document.getElementById(
         "addParticipantButton"
@@ -3312,10 +3317,9 @@ function displayRanking() {
     );
 
 
-    participantList.appendChild(
+    rankingArea.appendChild(
         rankingContainer
     );
-
 }
 
 
