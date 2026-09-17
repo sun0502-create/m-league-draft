@@ -301,6 +301,42 @@ async function createTournament() {
     tournamentSelect.value =
         tournament.id;
 
+
+
+// ========================================
+// 新しい大会のゲームへ切り替え
+// ========================================
+
+currentGameId =
+    null;
+
+participants =
+    [];
+
+displayParticipants();
+
+await loadGameFromSupabase();
+
+await loadParticipantsFromSupabase();
+
+await testSupabaseConnection();
+
+await loadCurrentInviteCode();
+
+    // ========================================
+    // 完了表示
+    // ========================================
+
+    tournamentMessage.textContent =
+        `「${tournament.name}」を作成しました。`;
+
+    newTournamentName.value =
+        "";
+
+    createTournamentButton.disabled =
+        false;
+}
+
 async function deleteCurrentTournament() {
 
     if (!currentTournamentId) {
@@ -443,40 +479,6 @@ async function deleteCurrentTournament() {
     alert(
         `「${tournamentName}」を削除しました。`
     );
-}
-
-// ========================================
-// 新しい大会のゲームへ切り替え
-// ========================================
-
-currentGameId =
-    null;
-
-participants =
-    [];
-
-displayParticipants();
-
-await loadGameFromSupabase();
-
-await loadParticipantsFromSupabase();
-
-await testSupabaseConnection();
-
-await loadCurrentInviteCode();
-
-    // ========================================
-    // 完了表示
-    // ========================================
-
-    tournamentMessage.textContent =
-        `「${tournament.name}」を作成しました。`;
-
-    newTournamentName.value =
-        "";
-
-    createTournamentButton.disabled =
-        false;
 }
 
 // ========================================
