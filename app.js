@@ -2332,6 +2332,87 @@ function getRankText(
 
 
 // ========================================
+// 順位に応じた色分け（金銀銅）
+// ========================================
+
+function applyRankVisual(
+    el,
+    rank
+) {
+
+    if (!el) {
+
+        return;
+
+    }
+
+    el.classList.remove(
+        "rank-gold",
+        "rank-silver",
+        "rank-bronze"
+    );
+
+    if (rank === 1) {
+
+        el.classList.add(
+            "rank-gold"
+        );
+
+    } else if (rank === 2) {
+
+        el.classList.add(
+            "rank-silver"
+        );
+
+    } else if (rank === 3) {
+
+        el.classList.add(
+            "rank-bronze"
+        );
+
+    }
+
+}
+
+
+// ========================================
+// ポイントの正負に応じた色分け
+// ========================================
+
+function applyScoreSign(
+    el,
+    score
+) {
+
+    if (!el) {
+
+        return;
+
+    }
+
+    el.classList.remove(
+        "score-positive",
+        "score-negative"
+    );
+
+    if (score > 0) {
+
+        el.classList.add(
+            "score-positive"
+        );
+
+    } else if (score < 0) {
+
+        el.classList.add(
+            "score-negative"
+        );
+
+    }
+
+}
+
+
+// ========================================
 // ポイント入力欄
 // ========================================
 
@@ -2449,6 +2530,12 @@ function createScoreInputs(
         `合計ポイント：${participant.totalScore.toFixed(1)} pt`;
 
 
+    applyScoreSign(
+        totalScoreElement,
+        participant.totalScore
+    );
+
+
     container.appendChild(
         totalScoreElement
     );
@@ -2502,6 +2589,12 @@ function updateScoreDisplays() {
                         rank
                     );
 
+
+                applyRankVisual(
+                    rankBadge,
+                    rank
+                );
+
             }
 
 
@@ -2517,6 +2610,12 @@ function updateScoreDisplays() {
                 totalScoreValue.textContent =
                     `${participant.totalScore.toFixed(1)} pt`;
 
+
+                applyScoreSign(
+                    totalScoreValue,
+                    participant.totalScore
+                );
+
             }
 
 
@@ -2531,6 +2630,12 @@ function updateScoreDisplays() {
 
                 totalScoreDetail.textContent =
                     `合計ポイント：${participant.totalScore.toFixed(1)} pt`;
+
+
+                applyScoreSign(
+                    totalScoreDetail,
+                    participant.totalScore
+                );
 
             }
 
@@ -3179,6 +3284,18 @@ function displayRanking() {
                 "ranking-row";
 
 
+            const currentRank =
+                getCurrentRank(
+                    participant
+                );
+
+
+            applyRankVisual(
+                rankingRow,
+                currentRank
+            );
+
+
             const rankText =
                 document.createElement(
                     "span"
@@ -3191,9 +3308,7 @@ function displayRanking() {
 
             rankText.textContent =
                 getRankText(
-                    getCurrentRank(
-                        participant
-                    )
+                    currentRank
                 );
 
 
@@ -3223,6 +3338,12 @@ function displayRanking() {
 
             scoreText.textContent =
                 `${participant.totalScore.toFixed(1)} pt`;
+
+
+            applyScoreSign(
+                scoreText,
+                participant.totalScore
+            );
 
 
             rankingRow.appendChild(
@@ -3315,13 +3436,23 @@ function updateRankingDisplay() {
                 );
 
 
+            const currentRank =
+                getCurrentRank(
+                    participant
+                );
+
+
+            applyRankVisual(
+                row,
+                currentRank
+            );
+
+
             if (rankText) {
 
                 rankText.textContent =
                     getRankText(
-                        getCurrentRank(
-                            participant
-                        )
+                        currentRank
                     );
 
             }
@@ -3339,6 +3470,12 @@ function updateRankingDisplay() {
 
                 scoreText.textContent =
                     `${participant.totalScore.toFixed(1)} pt`;
+
+
+                applyScoreSign(
+                    scoreText,
+                    participant.totalScore
+                );
 
             }
 
@@ -3509,6 +3646,12 @@ function displayParticipants() {
                 );
 
 
+            applyRankVisual(
+                rankBadge,
+                rank
+            );
+
+
             // ========================================
             // 合計ポイント
             // ========================================
@@ -3549,6 +3692,12 @@ function displayParticipants() {
 
             totalScoreValue.textContent =
                 `${participant.totalScore.toFixed(1)} pt`;
+
+
+            applyScoreSign(
+                totalScoreValue,
+                participant.totalScore
+            );
 
 
             totalScore.appendChild(
