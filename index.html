@@ -29,7 +29,7 @@
                 for="gameNameInput"
                 class="game-name-label"
             >
-                ゲーム名・大会名
+                大会名
             </label>
 
             <div class="game-name-row">
@@ -60,16 +60,20 @@
 
             <h2>大会</h2>
 
-            <select id="tournamentSelect">
+            <select
+                id="tournamentSelect"
+                class="tournament-select"
+            >
                 <option value="">
                     大会を選択してください
                 </option>
             </select>
 
-            <div>
+            <div class="tournament-create-row">
                 <input
                     type="text"
                     id="newTournamentName"
+                    class="tournament-create-input"
                     placeholder="新しい大会名"
                 >
 
@@ -78,8 +82,11 @@
                 </button>
             </div>
 
-            <button id="deleteTournamentButton">
-                大会を削除
+            <button
+                id="deleteTournamentButton"
+                class="tournament-delete-button"
+            >
+                🗑 この大会を削除
             </button>
 
             <p id="tournamentMessage"></p>
